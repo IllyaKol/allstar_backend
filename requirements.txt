@@ -1,0 +1,7 @@
+redis==3.4.1
+Django==3.0.4
+psycopg2==2.8.5
+django-redis-cache==2.1.0
+django-cors-headers==3.2.1
+djangorestframework==3.11.0
+djangorestframework-jwt==1.11.0
