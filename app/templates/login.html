@@ -1,0 +1,10 @@
+{% extends 'app/wrapper.html' %}
+
+{% block content %}
+    <form action="{% url 'app:login' %}" method="post">
+        {% csrf_token %}
+        {{ user_not_found }}
+        {{ form }}
+        <input type="submit" value="Login">
+    </form>
+{% endblock %}
