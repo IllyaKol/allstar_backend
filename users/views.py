@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
+from rest_framework.permissions import BasePermission
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view
 from rest_framework.decorators import permission_classes
@@ -13,6 +14,7 @@ from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework_jwt.serializers import jwt_payload_handler
 
 from allstar import settings
+from allstar import urls
 from .models import User
 from .serializers import UserSerializer
 
@@ -34,6 +36,11 @@ def authenticate_user(request):
                 user_logged_in.send(sender=user.__class__,
                                     request=request,
                                     user=user)
+                urls.redis_connection.set(
+                    name=f'{settings.REDIS_PROCESSING_KEY}{user.id}',
+                    value=token,
+                    ex=settings.TOKEN_EXPIRE
+                )
                 return Response(user_details, status=status.HTTP_200_OK)
             except Exception as e:
                 raise e
@@ -78,3 +85,25 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class IsTokenValid(BasePermission):
+    def has_permission(self, request, view):
+        user_id = request.user.id
+        token = request.auth
+
+        user_token = urls.redis_connection.get(
+            f'{settings.REDIS_PROCESSING_KEY}{user_id}'
+        )
+        if user_token and user_token == token:
+            return True
+        return False
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsTokenValid])
+def logout(request):
+    user_id = request.user.id
+    urls.redis_connection.delete(f'{settings.REDIS_PROCESSING_KEY}{user_id}')
+    response = {'success': 'OK'}
+    return Response(response, status=status.HTTP_200_OK)

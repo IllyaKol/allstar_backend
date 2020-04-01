@@ -8,6 +8,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
+
+DB_HOST = 'localhost'
+REDIS_SETTINGS = {
+    'db': 9,
+    'host': f'{DB_HOST}',
+    'port': 6379
+}
+
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'mz0cs$wmpnkna-#b@rt71u)sj&oattv3__1+%9ne!m##%mcd0-'
 
@@ -20,19 +29,20 @@ ALLOWED_HOSTS = [
     # '192.168.0.105'
 ]
 
-
 # Application definition
 
 
 INSTALLED_APPS = [
-    'app',
-    'users',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # My Apps
+    'app',
+    'users',
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -107,11 +117,13 @@ REST_FRAMEWORK = {
   ),
 }
 
+# maybe will change expire token time
+REDIS_PROCESSING_KEY = 'userToken_'
+TOKEN_EXPIRE = 604800
 JWT_AUTH = {
-
     'JWT_VERIFY': True,
     'JWT_VERIFY_EXPIRATION': True,
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=604800), #maybe will change expire token time
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=TOKEN_EXPIRE),
     'JWT_AUTH_HEADER_PREFIX': 'Bearer',
 
 }
