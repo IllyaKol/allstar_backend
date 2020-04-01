@@ -16,6 +16,7 @@ from rest_framework_jwt.serializers import jwt_payload_handler
 from allstar import settings
 from allstar import urls
 from .models import User
+from .utils import get_user_data
 from .serializers import UserSerializer
 
 
@@ -30,8 +31,7 @@ def authenticate_user(request):
             try:
                 payload = jwt_payload_handler(user)
                 token = jwt.encode(payload, settings.SECRET_KEY)
-                user_details = dict()
-                user_details['name'] = f"{user.first_name}, {user.last_name}"
+                user_details = get_user_data(user)
                 user_details['token'] = token
                 user_logged_in.send(sender=user.__class__,
                                     request=request,

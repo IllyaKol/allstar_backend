@@ -33,3 +33,4 @@ class StarUser(models.Model):
 
     class Meta:
         verbose_name_plural = 'Star User'
+        unique_together = ('star_id', 'user_id',)

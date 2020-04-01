@@ -1,57 +1,20 @@
-from django.http import JsonResponse
 from django.shortcuts import render
-from django.shortcuts import redirect
-from django.contrib.auth import login
-from django.contrib.auth import logout
-from django.contrib.auth import authenticate
-from django.contrib.auth.forms import AuthenticationForm
+from django.core.exceptions import ObjectDoesNotExist
 
+from rest_framework import status
+from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
 
+from .models import Star
 from .models import StarUser
 from users.views import IsTokenValid
-#
-#
-# def login_view(request):
-#     if request.method == 'POST':
-#         username = request.POST['username']
-#         password = request.POST['password']
-#         user = authenticate(username=username, password=password)
-#         if user is not None:
-#             response = login(request, user)
-#             print(response)
-#             return redirect('/')
-#         else:
-#             form = AuthenticationForm()
-#             context = {
-#                 'form': form,
-#                 'tab_name': 'Login',
-#                 'user_not_found': 'User Not Found!'
-#             }
-#             return render(request, 'login.html', context=context)
-#     else:
-#         if request.user.is_authenticated:
-#             return redirect('/')
-#         form = AuthenticationForm()
-#         context = {
-#             'form': form,
-#             'tab_name': 'Login'
-#         }
-#         return render(request, 'login.html', context=context)
-#
-#
-# @api_view(['GET'])
-# @permission_classes([IsAuthenticated, IsTokenValid])
-# def logout_view(request):
-#     logout(request)
-#     return redirect('app:login')
-#
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsTokenValid])
-def home(request):
+def stars(request):
     context = {
         'tab_name': 'Home Page'
     }
@@ -60,10 +23,36 @@ def home(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsTokenValid])
-def get_own_votes(request):
-    user_id = request.user.id
-    star_ids = [star.id for star in StarUser.objects.filter(user_id=user_id)]
-    # return JsonResponse(star_ids)
-    return JsonResponse(star_ids, safe=False)
+def get_starts_data(request):
+    response = []
+    for star in Star.objects.all():
+        stars_info = dict()
+        stars_info['id'] = star.id
+        stars_info['fullname'] = star.fullname
+        stars_info['age'] = star.age
+        stars_info['description'] = star.description
+        stars_info['image'] = None
+        stars_info['sex'] = star.sex_id.name
+        stars_info['votes'] = StarUser.objects.filter(star_id=star.id).count()
+        response.append(stars_info)
+    return Response(response, status=status.HTTP_200_OK)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsTokenValid])
+def voting(request, star_id):
+    try:
+        StarUser.objects.get(star_id=star_id, user_id=request.user.id).delete()
+        response = {'status': 'DELETE'}
+        return Response(response, status=status.HTTP_200_OK)
+    except ObjectDoesNotExist:
+        try:
+            StarUser(
+                star_id=Star.objects.get(id=star_id),
+                user_id=request.user
+            ).save()
+            response = {'status': 'ADD'}
+            return Response(response, status=status.HTTP_200_OK)
+        except ObjectDoesNotExist:
+            response = {'status': 'NOT_FOUND'}
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
