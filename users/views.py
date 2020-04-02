@@ -1,6 +1,7 @@
 import jwt
 
 from django.contrib.auth import user_logged_in
+from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework import status
 from rest_framework.views import APIView
@@ -26,8 +27,8 @@ def authenticate_user(request):
     try:
         email = request.data['email']
         password = request.data['password']
-        user = User.objects.get(email=email, password=password)
-        if user:
+        try:
+            user = User.objects.get(email=email, password=password)
             try:
                 payload = jwt_payload_handler(user)
                 token = jwt.encode(payload, settings.SECRET_KEY)
@@ -44,7 +45,7 @@ def authenticate_user(request):
                 return Response(user_details, status=status.HTTP_200_OK)
             except Exception as e:
                 raise e
-        else:
+        except ObjectDoesNotExist:
             res = {
                 'error': 'can not authenticate with the given credentials or '
                          'the account has been deactivated'
