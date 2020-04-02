@@ -67,8 +67,21 @@ class CreateUserAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+class IsTokenValid(BasePermission):
+    def has_permission(self, request, view):
+        user_id = request.user.id
+        token = request.auth
+
+        user_token = urls.redis_connection.get(
+            f'{settings.REDIS_PROCESSING_KEY}{user_id}'
+        )
+        if user_token and user_token == token:
+            return True
+        return False
+
+
 class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsTokenValid,)
     serializer_class = UserSerializer
 
     def get(self, request, *args, **kwargs):
@@ -85,19 +98,6 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class IsTokenValid(BasePermission):
-    def has_permission(self, request, view):
-        user_id = request.user.id
-        token = request.auth
-
-        user_token = urls.redis_connection.get(
-            f'{settings.REDIS_PROCESSING_KEY}{user_id}'
-        )
-        if user_token and user_token == token:
-            return True
-        return False
 
 
 @api_view(['GET'])

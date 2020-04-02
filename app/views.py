@@ -14,15 +14,6 @@ from users.views import IsTokenValid
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsTokenValid])
-def stars(request):
-    context = {
-        'tab_name': 'Home Page'
-    }
-    return render(request, 'app/home.html', context=context)
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated, IsTokenValid])
 def get_starts_data(request):
     response = []
     for star in Star.objects.all():
