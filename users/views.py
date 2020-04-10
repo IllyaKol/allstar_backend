@@ -30,7 +30,12 @@ def authenticate_user(request):
         response = {'error': 'Please provide a email and a password'}
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
     try:
-        user = User.objects.get(email=email, password=password)
+        user = User.objects.get(email=email)
+
+        if not user.check_password(password):
+            res = {'error': 'Incorrect password'}
+            return Response(res, status=status.HTTP_403_FORBIDDEN)
+
         try:
             payload = jwt_payload_handler(user)
             token = jwt.encode(payload, settings.SECRET_KEY)
@@ -48,9 +53,7 @@ def authenticate_user(request):
         except Exception as e:
             raise e
     except ObjectDoesNotExist:
-        res = {
-            'error': 'Incorrect email or password'
-        }
+        res = {'error': 'Incorrect email'}
         return Response(res, status=status.HTTP_403_FORBIDDEN)
 
 
