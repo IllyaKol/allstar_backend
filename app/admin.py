@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.forms import TextInput
 
 from .models import Sex
+from .models import Club
 from .models import Star
 from .models import StarUser
 
@@ -23,5 +24,6 @@ class StarAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Sex)
+admin.site.register(Club)
 admin.site.register(StarUser)
 admin.site.register(Star, StarAdmin)

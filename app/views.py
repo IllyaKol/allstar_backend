@@ -20,6 +20,7 @@ def get_starts_data(request):
         stars_info['id'] = star.id
         stars_info['fullname'] = star.fullname
         stars_info['age'] = star.age
+        stars_info['club'] = star.club_id.name
         stars_info['description'] = star.description
         stars_info['image'] = None
         stars_info['sex'] = star.sex_id.name
@@ -33,7 +34,7 @@ def get_starts_data(request):
 def voting(request, star_id):
     try:
         StarUser.objects.get(star_id=star_id, user_id=request.user.id).delete()
-        response = {'status': 'DELETE'}
+        response = {'message': 'DELETED'}
         return Response(response, status=status.HTTP_200_OK)
     except ObjectDoesNotExist:
         try:
@@ -41,8 +42,8 @@ def voting(request, star_id):
                 star_id=Star.objects.get(id=star_id),
                 user_id=request.user
             ).save()
-            response = {'status': 'ADD'}
+            response = {'message': 'ADDED'}
             return Response(response, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
-            response = {'status': 'NOT_FOUND'}
+            response = {'message': 'NOT_FOUND'}
             return Response(response, status=status.HTTP_404_NOT_FOUND)

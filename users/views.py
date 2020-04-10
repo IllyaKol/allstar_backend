@@ -24,37 +24,34 @@ from .serializers import UserSerializer
 @api_view(['POST'])
 @permission_classes([AllowAny, ])
 def authenticate_user(request):
+    email = request.data['email']
+    password = request.data['password']
+    if not (email and password):
+        response = {'error': 'Please provide a email and a password'}
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
     try:
-        email = request.data['email']
-        password = request.data['password']
+        user = User.objects.get(email=email, password=password)
         try:
-            user = User.objects.get(email=email, password=password)
-            try:
-                payload = jwt_payload_handler(user)
-                token = jwt.encode(payload, settings.SECRET_KEY)
-                user_details = get_user_data(user)
-                user_details['token'] = token
-                user_logged_in.send(sender=user.__class__,
-                                    request=request,
-                                    user=user)
-                urls.redis_connection.set(
-                    name=f'{settings.REDIS_PROCESSING_KEY}{user.id}',
-                    value=token,
-                    ex=settings.TOKEN_EXPIRE
-                )
-                return Response(user_details, status=status.HTTP_200_OK)
-            except Exception as e:
-                raise e
-        except ObjectDoesNotExist:
-            res = {
-                'error': 'can not authenticate with the given credentials or '
-                         'the account has been deactivated'
-            }
-            return Response(res, status=status.HTTP_403_FORBIDDEN)
-
-    except KeyError:
-        response = {'error': 'please provide a email and a password'}
-        return Response(response)
+            payload = jwt_payload_handler(user)
+            token = jwt.encode(payload, settings.SECRET_KEY)
+            user_details = get_user_data(user)
+            user_details['token'] = token
+            user_logged_in.send(sender=user.__class__,
+                                request=request,
+                                user=user)
+            urls.redis_connection.set(
+                name=f'{settings.REDIS_PROCESSING_KEY}{user.id}',
+                value=token,
+                ex=settings.TOKEN_EXPIRE
+            )
+            return Response(user_details, status=status.HTTP_200_OK)
+        except Exception as e:
+            raise e
+    except ObjectDoesNotExist:
+        res = {
+            'error': 'Incorrect email or password'
+        }
+        return Response(res, status=status.HTTP_403_FORBIDDEN)
 
 
 class CreateUserAPIView(APIView):
@@ -106,5 +103,5 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 def logout(request):
     user_id = request.user.id
     urls.redis_connection.delete(f'{settings.REDIS_PROCESSING_KEY}{user_id}')
-    response = {'success': 'OK'}
+    response = {'success': True}
     return Response(response, status=status.HTTP_200_OK)
