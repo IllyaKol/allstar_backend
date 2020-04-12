@@ -1,6 +1,7 @@
 import jwt
 
 from django.contrib.auth import user_logged_in
+from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework import status
@@ -16,7 +17,6 @@ from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework_jwt.serializers import jwt_payload_handler
 
 from allstar import settings
-from allstar import urls
 from .models import User
 from .utils import get_user_data
 from .serializers import UserSerializer
@@ -45,11 +45,7 @@ def authenticate_user(request):
             user_logged_in.send(sender=user.__class__,
                                 request=request,
                                 user=user)
-            urls.redis_connection.set(
-                name=f'{settings.REDIS_PROCESSING_KEY}{user.id}',
-                value=token,
-                ex=settings.TOKEN_EXPIRE
-            )
+            cache.set(key=f'{user.id}', value=token)
             return Response(user_details, status=status.HTTP_200_OK)
         except Exception as e:
             raise e
@@ -73,10 +69,7 @@ class IsTokenValid(BasePermission):
     def has_permission(self, request, view):
         user_id = request.user.id
         token = request.auth
-
-        user_token = urls.redis_connection.get(
-            f'{settings.REDIS_PROCESSING_KEY}{user_id}'
-        )
+        user_token = cache.get(f'{user_id}')
         if user_token and user_token == token:
             return True
         raise exceptions.NotAuthenticated()
@@ -106,6 +99,6 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 @permission_classes([IsAuthenticated, IsTokenValid])
 def logout(request):
     user_id = request.user.id
-    urls.redis_connection.delete(f'{settings.REDIS_PROCESSING_KEY}{user_id}')
+    cache.delete(f'{user_id}')
     response = {'success': True}
     return Response(response, status=status.HTTP_200_OK)

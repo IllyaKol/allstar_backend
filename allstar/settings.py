@@ -9,14 +9,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 
-DB_HOST = 'localhost'
-REDIS_SETTINGS = {
-    'db': 9,
-    'host': f'{DB_HOST}',
-    'port': 6379
-}
-
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'mz0cs$wmpnkna-#b@rt71u)sj&oattv3__1+%9ne!m##%mcd0-'
 
@@ -92,6 +84,17 @@ DATABASES = {
     }
 }
 
+TOKEN_EXPIRE = 604800
+CACHES = {
+    'default': {
+        'BACKEND': 'redis_cache.RedisCache',
+        'LOCATION': [
+            'redis://localhost:6379/9',
+        ],
+        'TIMEOUT': TOKEN_EXPIRE,
+        'KEY_PREFIX': 'userToken_'
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -121,9 +124,6 @@ REST_FRAMEWORK = {
   ),
 }
 
-# maybe will change expire token time
-REDIS_PROCESSING_KEY = 'userToken_'
-TOKEN_EXPIRE = 604800
 JWT_AUTH = {
     'JWT_VERIFY': True,
     'JWT_VERIFY_EXPIRATION': True,
