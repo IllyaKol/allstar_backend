@@ -4,6 +4,7 @@ from django.contrib.auth import user_logged_in
 from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework import status
+from rest_framework import exceptions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -78,7 +79,7 @@ class IsTokenValid(BasePermission):
         )
         if user_token and user_token == token:
             return True
-        return False
+        raise exceptions.NotAuthenticated()
 
 
 class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
