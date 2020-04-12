@@ -96,7 +96,7 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsTokenValid])
+@permission_classes([IsAuthenticated])
 def logout(request):
     user_id = request.user.id
     cache.delete(f'{user_id}')
