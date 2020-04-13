@@ -10,7 +10,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'mz0cs$wmpnkna-#b@rt71u)sj&oattv3__1+%9ne!m##%mcd0-'
+SECRET_KEY = ''
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -20,7 +20,6 @@ CORS_ORIGIN_ALLOW_ALL = True
 ALLOWED_HOSTS = [
     '0.0.0.0',
     '127.0.0.1',
-    # '192.168.0.105'
 ]
 
 # Application definition
@@ -78,8 +77,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'all_star',
-        'USER': 'django_auth',
-        'PASSWORD': 'asdfgh',
+        'USER': '',
+        'PASSWORD': '',
         'HOST': 'localhost',
     }
 }
