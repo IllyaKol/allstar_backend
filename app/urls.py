@@ -5,9 +5,6 @@ from . import views
 app_name = 'app'
 
 urlpatterns = [
-    path('', views.home, name='home'),
-    path('login/', views.login_view, name='login'),
-    path('logout/', views.logout_view, name='logout'),
-    path('own_votes/', views.get_own_votes, name='votes'),
+    path('data/', views.get_starts_data, name='stars_data'),
+    path('voting/<int:star_id>/', views.voting, name='voting'),
 ]
-
