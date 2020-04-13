@@ -1,6 +1,14 @@
 # allstar_backend
 
 > AllStar project
+> Site shows vote static about football stars
+> Project where you can vote for stars
+
+
+## Install requirements
+```
+pip install -r requirements.txt
+```
 
 ## DB Setup
 ```
