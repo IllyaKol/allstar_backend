@@ -1,8 +1,6 @@
 # allstar_backend
 
-> AllStar project
-> Site shows vote static about football stars
-> Project where you can vote for stars
+> AllStar project. Users can registrations on site and login in system for vote. There user can see some statistics about football stars.
 
 
 ## Install requirements
